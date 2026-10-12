@@ -1,0 +1,242 @@
+[
+  {
+    "id": "CASE-001",
+    "language": "python",
+    "file_path": "src/security/token_signer.py",
+    "line_number": 42,
+    "algorithm": "RSA-2048",
+    "matched_pattern": "RSA PSS signature verification",
+    "evidence": "verifier = pss.new(rsa_key); verifier.verify(digest, signature)",
+    "expected": {
+      "risk_level": "HIGH",
+      "cryptographic_purpose": "DIGITAL_SIGNATURE",
+      "migration_priority": "HIGH",
+      "manual_review_required": false
+    },
+    "rationale": "RSA used for digital signature verification is vulnerable to Shor's algorithm; ML-DSA is the standard replacement."
+  },
+  {
+    "id": "CASE-002",
+    "language": "java",
+    "file_path": "src/main/java/crypto/SessionKeyTransport.java",
+    "line_number": 88,
+    "algorithm": "RSA",
+    "matched_pattern": "Cipher.getInstance('RSA/ECB/OAEPWithSHA-256AndMGF1Padding')",
+    "evidence": "Cipher cipher = Cipher.getInstance('RSA/ECB/OAEPWithSHA-256AndMGF1Padding'); cipher.init(Cipher.ENCRYPT_MODE, pubKey);",
+    "expected": {
+      "risk_level": "HIGH",
+      "cryptographic_purpose": "KEY_ESTABLISHMENT",
+      "migration_priority": "HIGH",
+      "manual_review_required": false
+    },
+    "rationale": "RSA OAEP encryption used for key transport is vulnerable to Shor's algorithm; ML-KEM is the standard replacement."
+  },
+  {
+    "id": "CASE-003",
+    "language": "c",
+    "file_path": "crypto/key_gen.c",
+    "line_number": 15,
+    "algorithm": "RSA",
+    "matched_pattern": "RSA_generate_key_ex call",
+    "evidence": "RSA_generate_key_ex(rsa, 2048, e, NULL);",
+    "expected": {
+      "risk_level": "HIGH",
+      "cryptographic_purpose": "UNKNOWN",
+      "migration_priority": "REVIEW_REQUIRED",
+      "manual_review_required": true
+    },
+    "rationale": "RSA key generation indicates quantum risk, but the specific operational role (signing vs encryption) cannot be confirmed without review."
+  },
+  {
+    "id": "CASE-004",
+    "language": "python",
+    "file_path": "src/identity/ecdsa_auth.py",
+    "line_number": 61,
+    "algorithm": "ECDSA",
+    "matched_pattern": "ecdsa signing operation",
+    "evidence": "signature = signing_key.sign(message_digest)",
+    "expected": {
+      "risk_level": "HIGH",
+      "cryptographic_purpose": "DIGITAL_SIGNATURE",
+      "migration_priority": "HIGH",
+      "manual_review_required": false
+    },
+    "rationale": "ECDSA signatures are vulnerable to Shor's discrete log attack; ML-DSA is the designated replacement."
+  },
+  {
+    "id": "CASE-005",
+    "language": "c",
+    "file_path": "network/tls_handshake.c",
+    "line_number": 112,
+    "algorithm": "ECDH",
+    "matched_pattern": "ECDH shared secret agreement",
+    "evidence": "EVP_PKEY_derive(ctx, shared_secret, &secret_len);",
+    "expected": {
+      "risk_level": "HIGH",
+      "cryptographic_purpose": "KEY_ESTABLISHMENT",
+      "migration_priority": "HIGH",
+      "manual_review_required": false
+    },
+    "rationale": "ECDH key derivation is vulnerable to harvest-now-decrypt-later attacks; ML-KEM or hybrid key exchange is required."
+  },
+  {
+    "id": "CASE-006",
+    "language": "java",
+    "file_path": "src/main/java/crypto/CurveConfig.java",
+    "line_number": 29,
+    "algorithm": "ECC",
+    "matched_pattern": "ECGenParameterSpec curve init",
+    "evidence": "ECGenParameterSpec ecSpec = new ECGenParameterSpec('secp256r1');",
+    "expected": {
+      "risk_level": "HIGH",
+      "cryptographic_purpose": "UNKNOWN",
+      "migration_priority": "REVIEW_REQUIRED",
+      "manual_review_required": true
+    },
+    "rationale": "Generic elliptic curve declaration without clear signature or key agreement operation requires manual inspection."
+  },
+  {
+    "id": "CASE-007",
+    "language": "python",
+    "file_path": "src/crypto/ecc_verifier.py",
+    "line_number": 34,
+    "algorithm": "secp256r1",
+    "matched_pattern": "curve signature verification",
+    "evidence": "verify_signature(pubkey, message, sig)",
+    "expected": {
+      "risk_level": "HIGH",
+      "cryptographic_purpose": "DIGITAL_SIGNATURE",
+      "migration_priority": "HIGH",
+      "manual_review_required": false
+    },
+    "rationale": "Curve with signature verification pattern maps to digital signature role and ML-DSA recommendation."
+  },
+  {
+    "id": "CASE-008",
+    "language": "c",
+    "file_path": "src/transport/ecc_derive.c",
+    "line_number": 95,
+    "algorithm": "ECC",
+    "matched_pattern": "elliptic curve key agreement",
+    "evidence": "compute_secret(peer_key, shared_secret);",
+    "expected": {
+      "risk_level": "HIGH",
+      "cryptographic_purpose": "KEY_ESTABLISHMENT",
+      "migration_priority": "HIGH",
+      "manual_review_required": false
+    },
+    "rationale": "Generic ECC with key agreement pattern maps to key establishment role and ML-KEM recommendation."
+  },
+  {
+    "id": "CASE-009",
+    "language": "python",
+    "file_path": "storage/encrypted_db.py",
+    "line_number": 53,
+    "algorithm": "AES-128",
+    "matched_pattern": "AES 128-bit CBC mode",
+    "evidence": "cipher = AES.new(key, AES.MODE_CBC, iv); cipher.encrypt(plaintext)",
+    "expected": {
+      "risk_level": "MODERATE",
+      "cryptographic_purpose": "SYMMETRIC_ENCRYPTION",
+      "migration_priority": "MEDIUM",
+      "manual_review_required": false
+    },
+    "rationale": "AES-128 security margin is reduced to ~64 bits under Grover's algorithm; recommend upgrading to AES-256."
+  },
+  {
+    "id": "CASE-010",
+    "language": "java",
+    "file_path": "src/main/java/storage/VaultStore.java",
+    "line_number": 77,
+    "algorithm": "AES-256",
+    "matched_pattern": "AES GCM 256-bit",
+    "evidence": "Cipher cipher = Cipher.getInstance('AES/GCM/NoPadding'); cipher.init(Cipher.ENCRYPT_MODE, key256, gcmSpec);",
+    "expected": {
+      "risk_level": "LOWER",
+      "cryptographic_purpose": "SYMMETRIC_ENCRYPTION",
+      "migration_priority": "LOW",
+      "manual_review_required": false
+    },
+    "rationale": "AES-256 retains ~128 bits quantum security margin under Grover's algorithm; quantum-resistant for symmetric encryption."
+  },
+  {
+    "id": "CASE-011",
+    "language": "python",
+    "file_path": "utils/digest_helper.py",
+    "line_number": 19,
+    "algorithm": "SHA-256",
+    "matched_pattern": "hashlib.sha256() digest",
+    "evidence": "digest = hashlib.sha256(payload).hexdigest()",
+    "expected": {
+      "risk_level": "LOWER",
+      "cryptographic_purpose": "HASH_FUNCTION",
+      "migration_priority": "LOW",
+      "manual_review_required": false
+    },
+    "rationale": "SHA-256 is a cryptographic hash function, not encryption; remains quantum-resistant for near-term use."
+  },
+  {
+    "id": "CASE-012",
+    "language": "c",
+    "file_path": "hash/sha256_util.c",
+    "line_number": 40,
+    "algorithm": "SHA-256",
+    "matched_pattern": "SHA256_Update call",
+    "evidence": "SHA256_Init(&sha256); SHA256_Update(&sha256, data, len); SHA256_Final(hash, &sha256);",
+    "expected": {
+      "risk_level": "LOWER",
+      "cryptographic_purpose": "HASH_FUNCTION",
+      "migration_priority": "LOW",
+      "manual_review_required": false
+    },
+    "rationale": "C OpenSSL SHA-256 usage is hash functionality; collision resistance remains adequate against practical quantum attacks."
+  },
+  {
+    "id": "CASE-013",
+    "language": "python",
+    "file_path": "src/crypto/dual_purpose.py",
+    "line_number": 68,
+    "algorithm": "RSA",
+    "matched_pattern": "RSA sign and encrypt multiplexer",
+    "evidence": "def process(action, msg): return rsa.sign(msg) if action == 'sign' else rsa.encrypt(msg)",
+    "expected": {
+      "risk_level": "HIGH",
+      "cryptographic_purpose": "AMBIGUOUS",
+      "migration_priority": "REVIEW_REQUIRED",
+      "manual_review_required": true
+    },
+    "rationale": "Contradictory pattern evidence (both sign and encrypt) requires manual review before recommending ML-DSA vs ML-KEM."
+  },
+  {
+    "id": "CASE-014",
+    "language": "c",
+    "file_path": "crypto/legacy_feistel.c",
+    "line_number": 82,
+    "algorithm": "CustomFeistel-X",
+    "matched_pattern": "proprietary cipher block",
+    "evidence": "custom_feistel_encrypt(block, key);",
+    "expected": {
+      "risk_level": "UNKNOWN",
+      "cryptographic_purpose": "UNKNOWN",
+      "migration_priority": "REVIEW_REQUIRED",
+      "manual_review_required": true
+    },
+    "rationale": "Unrecognized algorithm cannot be deterministically classified; manual cryptographic review is mandatory."
+  },
+  {
+    "id": "CASE-015",
+    "language": "java",
+    "file_path": "src/main/java/net/KeyExchangeService.java",
+    "line_number": 51,
+    "algorithm": "X25519",
+    "matched_pattern": "NamedParameterSpec X25519 agreement",
+    "evidence": "KeyAgreement ka = KeyAgreement.getInstance('X25519'); ka.init(privKey);",
+    "expected": {
+      "risk_level": "HIGH",
+      "cryptographic_purpose": "KEY_ESTABLISHMENT",
+      "migration_priority": "HIGH",
+      "manual_review_required": false
+    },
+    "rationale": "X25519 elliptic curve Diffie-Hellman key agreement is broken by Shor's algorithm; ML-KEM is the PQC replacement."
+  }
+]

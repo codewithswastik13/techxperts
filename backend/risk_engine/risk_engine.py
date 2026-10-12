@@ -100,6 +100,8 @@ def infer_cryptographic_purpose(
         return CryptographicPurpose.SYMMETRIC_ENCRYPTION
     if algo_key == "SHA-256":
         return CryptographicPurpose.HASH_FUNCTION
+    if algo_key == "UNKNOWN":
+        return CryptographicPurpose.UNKNOWN
 
     # Search pattern and evidence for functional indicators
     text = f"{_safe_str(matched_pattern).lower()} {_safe_str(evidence).lower()}"
