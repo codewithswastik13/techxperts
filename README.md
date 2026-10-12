@@ -1,153 +1,303 @@
-# QuantumShield: Crypto Inventory & Migration Planner
+# QuantumShield — Cryptographic Inventory & Migration Planner
 
-> **QFF 2026 Hackathon | PS-P2: Crypto Inventory & Migration Planner**  
-> **Track:** Cryptography / Post-Quantum Cryptography (PQC)  
-> **Shared Repository:** [github.com/codewithswastik13/techxperts](https://github.com/codewithswastik13/techxperts)
+**QFF 2026 Hackathon | PS-P2: Crypto Inventory & Migration Planner**  
+**Track:** Cryptography / Post-Quantum Cryptography (PQC)  
+**Repository:** https://github.com/codewithswastik13/techxperts
 
-QuantumShield is an enterprise-grade automated scanning and migration planning tool that audits multi-language source repositories for classical cryptographic algorithms vulnerable to quantum computing attacks (Shor's and Grover's algorithms) and produces actionable, NIST-aligned post-quantum cryptographic (PQC) migration roadmaps.
+QuantumShield statically scans source code repositories to identify cryptographic algorithm usage, creates a structured cryptographic inventory, assesses potential quantum risk, and assists teams with post-quantum cryptography (PQC) migration planning.
+
+The system is designed to analyze source code without executing it and to provide transparent, NIST-aligned recommendations for human review.
 
 ---
 
-## 1. Architecture & Team Ownership
+## 1. Architecture and Team Ownership
 
-QuantumShield is architected into three specialized, decoupled modules developed concurrently:
+The project consists of three independently developed modules.
 
-```
-quantumshield/
+- **Member 1 — Cryptographic Scanner:** Detects cryptographic algorithm usage in source repositories.
+- **Member 2 — Risk Engine:** Classifies findings, explains quantum-related risks, and provides migration recommendations.
+- **Member 3 — API, Frontend and Reporting:** Integrates the modules through FastAPI and provides the React dashboard and report downloads.
+
+### Project structure
+
+```text
+techxperts/
 ├── backend/
-│   ├── scanner/              # [Member 1] Static analysis scanner (AST/regex crypto discovery)
-│   ├── risk_engine/          # [Member 2] NIST-aligned quantum vulnerability & risk assessment
-│   │   ├── classifier.py     # Algorithm classification, risk levels (HIGH/MODERATE/LOWER)
-│   │   ├── rules.py          # NIST FIPS 203/204/205 replacement guidance & parameters
-│   │   └── models.py         # Structured data models & typing
-│   ├── app/                  # [Member 3] FastAPI integration layer, validation & report generation
-│   │   ├── main.py           # REST endpoints, archive security, ZIP extraction & cleanup
-│   │   └── scanner_stub.py   # Graceful fallback test double when scanner is unmerged
+│   ├── scanner/
+│   │   ├── scanner.py
+│   │   ├── rules.py
+│   │   └── README.md
+│   ├── risk_engine/
+│   │   ├── __init__.py
+│   │   ├── rules.py
+│   │   └── risk_engine.py
+│   ├── app/
+│   │   ├── main.py
+│   │   └── scanner_stub.py
 │   ├── tests/
-│   │   ├── test_risk_engine.py  # Member 2 test suite (16 tests)
-│   │   └── test_api.py          # Member 3 API & integration test suite (54 tests)
 │   └── requirements.txt
-├── frontend/                 # [Member 3] React 18 + Vite 5 Interactive Security Dashboard
+├── frontend/
 │   ├── src/
-│   │   ├── components/       # Header, Dashboard, ScanWorkspace, ResultsView, FindingsTable, RiskCharts, MigrationPlanner
-│   │   ├── services/api.js   # Robust backend communication & blob download helpers
-│   │   ├── index.css         # Minimalist charcoal/teal security UI design system
-│   │   └── App.jsx
 │   ├── package.json
 │   └── vite.config.js
-└── sample/                   # Multi-language test corpus (Python, Java, C) with RSA, ECDSA, ECDH, AES
+├── sample/
+├── sample_data/
+└── README.md
 ```
 
-- **Member 1 (Scanner):** AST and regex-based code scanning for cryptographic usage patterns in `.py`, `.java`, `.c`, `.cpp`, `.go`, `.rs`.
-- **Member 2 (Risk Engine):** Risk classification (HIGH / MODERATE / LOWER), algorithmic explanation, and post-quantum migration recommendations (ML-KEM, ML-DSA, SLH-DSA).
-- **Member 3 (Frontend, Backend Integration & Reporting):** Secure FastAPI backend, ZIP parsing sandbox, React + Vite interactive dashboard, CSV & JSON report exports, comprehensive automated test suites.
+The exact files may evolve as the team integrates and tests the application.
 
 ---
 
 ## 2. Key Features
 
-- **Secure Archive Ingestion:** Sandboxed ZIP extraction with protection against path traversal (`../`), zip bombs (size & entry limits), symlinks, and absolute path injections.
-- **Strict Execution Policy:** Zero execution of uploaded source code; files undergo pure static analysis in isolated ephemeral directories with guaranteed cleanup.
-- **NIST Post-Quantum Cryptographic Standards Alignment:**
-  - Asymmetric Encryption / Key Exchange (RSA, ECDH) $\to$ **NIST FIPS 203 (ML-KEM / Crystals-Kyber)**
-  - Digital Signatures (RSA Sign, ECDSA, Ed25519) $\to$ **NIST FIPS 204 (ML-DSA / Crystals-Dilithium)** or **NIST FIPS 205 (SLH-DSA / SPHINCS+)**
-  - Symmetric Ciphers (AES-128 $\to$ AES-256 for Grover's algorithm mitigation)
-- **Interactive Security Dashboard:**
-  - Real-time drag-and-drop archive scanner.
-  - Multi-dimensional risk charts (Risk severity distribution, algorithm counts, cryptographic purposes).
-  - Searchable, filterable findings table with code snippet evidence and contextual explanations.
-  - Actionable Migration Planner prioritizing high-urgency transitions.
-- **Auditing & Reporting:** One-click downloads of comprehensive JSON and formula-injection-safe CSV compliance audit reports.
+- Static cryptographic discovery across supported source languages.
+- Structured findings with file paths, line numbers, evidence and algorithm information.
+- Risk classification and purpose-aware migration recommendations.
+- Separation of risk severity from migration priority.
+- Manual-review flags for ambiguous or incomplete cryptographic usage.
+- Secure ZIP upload and temporary extraction for repository analysis.
+- Interactive dashboard with search, filtering and risk visualizations.
+- JSON and CSV report downloads, where supported by the API.
+- Automated scanner, risk-engine and API tests.
 
 ---
 
-## 3. Quickstart & Setup Guide (Windows / Linux / macOS)
+## 3. Security Principles
+
+QuantumShield is designed to inspect source code as data.
+
+- Uploaded source files must never be executed, imported or compiled during scanning.
+- ZIP extraction must defend against path traversal, oversized archives and excessive entry counts.
+- Temporary files must be isolated and cleaned up.
+- Binary and irrelevant files should be excluded from source scanning.
+- File size and repository scanning limits should be enforced.
+- CSV exports should sanitize formula-like values.
+- Static pattern matching may miss dynamically constructed or aliased cryptographic calls; findings require appropriate human review.
+
+---
+
+## 4. Post-Quantum Migration Guidance
+
+Recommendations depend on the algorithm's actual purpose and deployment context.
+
+| Classical cryptographic use | Potential migration direction |
+|---|---|
+| RSA or elliptic-curve key establishment | Evaluate NIST FIPS 203 ML-KEM for the applicable key-establishment workflow |
+| RSA or ECDSA digital signatures | Evaluate NIST FIPS 204 ML-DSA for the applicable signature workflow |
+| AES-128 | Evaluate AES-256 where a larger symmetric security margin is appropriate |
+| AES-256 | Retain an appropriate symmetric-cryptography assessment; do not automatically replace it with a PQC public-key algorithm |
+| SHA-256 | Assess hash-function requirements separately from encryption and signature migration |
+
+These are planning directions, not automatic replacements. Compatibility, protocol design, key management, interoperability and operational requirements must be evaluated before migration.
+
+---
+
+## 5. Quickstart
 
 ### Prerequisites
-- **Python:** 3.10+ (tested on Python 3.14)
-- **Node.js:** v18+ (tested on Node.js v24.20.0 and npm 11.19.0)
-- **Git**
 
-### A. Backend Setup
-1. Clone the repository and checkout the integration branch:
-   ```bash
-   git clone https://github.com/codewithswastik13/techxperts.git
-   cd techxperts
-   git checkout feature/frontend-api
-   ```
-2. Set up Python virtual environment and install backend dependencies:
-   ```bash
-   python -m venv venv
-   # Windows:
-   .\venv\Scripts\activate
-   # Linux/macOS:
-   source venv/bin/activate
+- Python 3.10 or later
+- Node.js and npm compatible with the frontend project
+- Git
 
-   pip install -r backend/requirements.txt
-   ```
-3. Start the FastAPI backend server:
-   ```bash
-   python -m uvicorn backend.app.main:app --reload --port 8000
-   ```
-   *The backend will be available at [http://localhost:8000](http://localhost:8000) (Interactive Swagger Docs at `/docs`).*
-
-### B. Frontend Setup
-1. Open a new terminal and navigate to `frontend`:
-   ```bash
-   cd frontend
-   npm install
-   ```
-2. Start the Vite development server:
-   ```bash
-   npm run dev
-   ```
-   *The frontend dashboard will be available at [http://localhost:5173](http://localhost:5173).*
-3. To build for production:
-   ```bash
-   npm run build
-   ```
-
----
-
-## 4. API Endpoints
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/api/health` | Returns server health, version, limits, and module availability status |
-| `POST` | `/api/scan` | Accepts a multipart ZIP file, performs safe extraction and triggers analysis |
-| `GET` | `/api/scans` | Lists scans executed during the current session |
-| `GET` | `/api/scan/{scan_id}/report?format=json` | Downloads a comprehensive JSON migration report |
-| `GET` | `/api/scan/{scan_id}/report?format=csv` | Downloads a sanitised, formula-injection-safe CSV audit report |
-
----
-
-## 5. Running Automated Tests
-
-QuantumShield includes 70 comprehensive automated tests across the backend and risk engine:
+### Clone the repository
 
 ```bash
-# Run complete test suite (Member 2 + Member 3)
-python -m pytest backend/tests/ -v
-
-# Run API integration and security tests specifically
-python -m pytest backend/tests/test_api.py -v
-
-# Run Risk Engine test suite specifically
-python -m pytest backend/tests/test_risk_engine.py -v
+git clone https://github.com/codewithswastik13/techxperts.git
+cd techxperts
 ```
 
-### Covered Security Test Scenarios:
-- Path traversal rejection (`../../etc/passwd`, Windows drive prefixes)
-- Archive bomb mitigation (oversized entries, excessive file counts)
-- Corrupted and truncated archives
-- CSV formula injection sanitization (protecting spreadsheet viewers from `=cmd|...`)
-- Ephemeral workspace directory isolation and guaranteed cleanup
-- Non-source file exclusion (`.exe`, `.bin` ignored during extraction)
+Use the branch agreed upon by the team for the integrated application.
+
+### Backend setup
+
+```bash
+python -m venv .venv
+```
+
+Windows:
+
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+Linux/macOS:
+
+```bash
+source .venv/bin/activate
+```
+
+Install the backend dependencies:
+
+```bash
+pip install -r backend/requirements.txt
+```
+
+Start the API:
+
+```bash
+python -m uvicorn backend.app.main:app --reload --port 8000
+```
+
+API documentation should be available at:
+
+`http://localhost:8000/docs`
+
+### Frontend setup
+
+Open another terminal:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open the local URL printed by Vite in the terminal.
+
+Build the frontend for production:
+
+```bash
+npm run build
+```
 
 ---
 
-## 6. Known Limitations & Future Work
+## 6. API Endpoints
 
-- **Static Heuristic Scanner:** Static pattern recognition flags potential cryptographic primitives and API usages. Manual code review is always advised before production migration.
-- **Session-Scoped Storage:** Scan results and generated reports are held in memory during the server runtime and are bounded to avoid memory exhaustion. In a production cluster, this can be backed by Redis or an encrypted database.
-- **Scanner Integration:** While Member 1's scanner branch is awaiting final merge, the application gracefully utilizes the verified risk engine and sample test corpus with end-to-end integration fallback.
+The API implementation provides or is intended to provide the following endpoints. Confirm the current implementation before relying on any endpoint.
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/api/health` | Check API health and module availability |
+| POST | `/api/scan` | Upload a ZIP archive and analyze its source files |
+| GET | `/api/scans` | List available scan sessions |
+| GET | `/api/scan/{scan_id}/report?format=json` | Retrieve a JSON report |
+| GET | `/api/scan/{scan_id}/report?format=csv` | Retrieve a CSV report |
+
+---
+
+## 7. Running Tests
+
+Run the backend test suite from the repository root:
+
+```bash
+python -m pytest backend/tests/ -v
+```
+
+Run an individual test module:
+
+```bash
+python -m pytest backend/tests/test_scanner.py -v
+python -m pytest backend/tests/test_risk_engine.py -v
+python -m pytest backend/tests/test_api.py -v
+```
+
+Build the frontend:
+
+```bash
+npm --prefix frontend run build
+```
+
+Run only the test commands relevant to the files currently present in the repository.
+
+---
+
+## 8. Scanner Documentation
+
+### Supported languages and file types
+
+- Python: `.py`
+- Java: `.java`
+- C: `.c`, `.h`
+
+Additional language support depends on the implemented scanner rules.
+
+### Cryptographic patterns
+
+The scanner identifies supported patterns associated with:
+
+- RSA
+- ECC
+- ECDH
+- ECDSA
+- AES
+- SHA-256
+
+Detection depends on the available source context and implemented patterns. The scanner is a static heuristic tool, not a complete proof of all cryptographic usage.
+
+### Scanner interface
+
+```python
+from backend.scanner import scan_repository
+
+findings = scan_repository("sample_data")
+```
+
+### Finding schema
+
+Each finding is expected to contain:
+
+```json
+{
+  "file_path": "sample_data/python/crypto_sample.py",
+  "line_number": 20,
+  "language": "python",
+  "algorithm": "RSA",
+  "matched_pattern": "RSA-related usage",
+  "evidence": "synthetic cryptographic API call"
+}
+```
+
+The fields identify where a pattern was found and provide concise evidence for the risk engine.
+
+### Scanner safeguards
+
+- No execution of scanned source code.
+- Exclusion of irrelevant directories and binary files.
+- File-size and repository-size limits.
+- Protection against symbolic links escaping the repository root, where implemented.
+- Resilient source decoding.
+- Deterministic findings where supported.
+
+### Known limitations
+
+- Dynamically constructed algorithm names may not be detected.
+- Aliased imports and custom wrappers can complicate detection.
+- Reflection, macro expansion and runtime-generated code may require additional analysis.
+- Static findings should be reviewed before production migration decisions.
+
+---
+
+## 9. Reporting and Evaluation
+
+Reports should preserve scanner metadata and include risk classification, cryptographic purpose, explanations, migration recommendations, priority and manual-review status where available.
+
+Synthetic evaluation data can help test expected behavior, but it does not establish real-world detection accuracy. Official benchmark results must be measured against the applicable evaluation dataset and protocol.
+
+---
+
+## 10. Team Workflow
+
+The team uses separate feature branches:
+
+- `feature/scanner`
+- `feature/risk-engine`
+- `feature/frontend-api`
+
+Developers should work on their own branches, preserve the shared Git history, test their changes, and use pull requests for integration.
+
+Avoid force-pushing, overwriting another member's work, or creating unrelated Git histories.
+
+---
+
+## 11. Limitations and Future Work
+
+- Improve static analysis for aliases and complex cryptographic API usage.
+- Expand language and library coverage.
+- Evaluate against a ground-truth dataset.
+- Improve protocol-aware migration recommendations.
+- Add deployment-specific validation and operational guidance.
+
+QuantumShield is a migration-planning aid. Its recommendations are not a substitute for a complete cryptographic architecture review.
