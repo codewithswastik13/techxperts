@@ -129,10 +129,26 @@ RULES: Dict[str, Dict[str, Any]] = {
             "logarithm problem, which is broken by Shor's algorithm on a CRQC."
         ),
         "purpose_recommendations": {
+            CryptographicPurpose.DIGITAL_SIGNATURE: {
+                "recommendation": (
+                    "Elliptic curve digital signature detected. Migrate to NIST FIPS 204 ML-DSA "
+                    "(e.g., ML-DSA-44 or ML-DSA-65). For stateful environments, evaluate LMS/XMSS."
+                ),
+                "migration_priority": MigrationPriority.HIGH,
+                "manual_review_required": False,
+            },
+            CryptographicPurpose.KEY_ESTABLISHMENT: {
+                "recommendation": (
+                    "Elliptic curve key agreement detected. Migrate to NIST FIPS 203 ML-KEM (e.g., ML-KEM-768), "
+                    "or implement hybrid classical-PQC key exchange during transition."
+                ),
+                "migration_priority": MigrationPriority.HIGH,
+                "manual_review_required": False,
+            },
             CryptographicPurpose.UNKNOWN: {
                 "recommendation": (
-                    "Generic elliptic curve usage identified. Inspect the code to determine whether "
-                    "the curve is used for key exchange (e.g., ECDH) or digital signatures (e.g., ECDSA). "
+                    "Generic elliptic curve usage identified without clear indication of operation. Inspect the code "
+                    "to determine whether the curve is used for key exchange (e.g., ECDH) or digital signatures (e.g., ECDSA). "
                     "Plan migration to ML-KEM for key exchange or ML-DSA for signatures."
                 ),
                 "migration_priority": MigrationPriority.REVIEW_REQUIRED,

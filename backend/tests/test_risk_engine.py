@@ -315,6 +315,64 @@ class TestRiskEngine(unittest.TestCase):
         self.assertEqual(res["migration_priority"], MigrationPriority.REVIEW_REQUIRED)
         self.assertTrue(res["manual_review_required"])
 
+    def test_generic_ecc_unknown_purpose(self):
+        """Generic ECC without purpose evidence should be HIGH risk and flag manual review."""
+        findings = [
+            {
+                "file_path": "crypto/curves.py",
+                "line_number": 19,
+                "algorithm": "ECC",
+                "matched_pattern": "elliptic curve generation",
+                "evidence": "curve = get_curve('secp256r1')",
+            }
+        ]
+        results = analyze_findings(findings)
+        res = results[0]
+        self.assertEqual(res["risk_level"], RiskLevel.HIGH)
+        self.assertEqual(res["cryptographic_purpose"], CryptographicPurpose.UNKNOWN)
+        self.assertEqual(res["migration_priority"], MigrationPriority.REVIEW_REQUIRED)
+        self.assertTrue(res["manual_review_required"])
+
+    def test_generic_ecc_signing_purpose(self):
+        """Generic ECC with signing evidence should infer DIGITAL_SIGNATURE and recommend ML-DSA."""
+        findings = [
+            {
+                "file_path": "auth/ecc_auth.py",
+                "line_number": 40,
+                "algorithm": "secp256r1",
+                "matched_pattern": "curve signature verification",
+                "evidence": "verify_signature(pubkey, message, sig)",
+            }
+        ]
+        results = analyze_findings(findings)
+        res = results[0]
+        self.assertEqual(res["risk_level"], RiskLevel.HIGH)
+        self.assertEqual(res["cryptographic_purpose"], CryptographicPurpose.DIGITAL_SIGNATURE)
+        self.assertIn("ML-DSA", res["recommendation"])
+        self.assertNotIn("ML-KEM", res["recommendation"])
+        self.assertEqual(res["migration_priority"], MigrationPriority.HIGH)
+        self.assertFalse(res["manual_review_required"])
+
+    def test_generic_ecc_key_exchange_purpose(self):
+        """Generic ECC with key agreement evidence should infer KEY_ESTABLISHMENT and recommend ML-KEM."""
+        findings = [
+            {
+                "file_path": "network/ecc_key.py",
+                "line_number": 75,
+                "algorithm": "ECC",
+                "matched_pattern": "elliptic curve key agreement",
+                "evidence": "shared_secret = compute_secret(peer_key)",
+            }
+        ]
+        results = analyze_findings(findings)
+        res = results[0]
+        self.assertEqual(res["risk_level"], RiskLevel.HIGH)
+        self.assertEqual(res["cryptographic_purpose"], CryptographicPurpose.KEY_ESTABLISHMENT)
+        self.assertIn("ML-KEM", res["recommendation"])
+        self.assertNotIn("ML-DSA", res["recommendation"])
+        self.assertEqual(res["migration_priority"], MigrationPriority.HIGH)
+        self.assertFalse(res["manual_review_required"])
+
 
 if __name__ == "__main__":
     unittest.main()
