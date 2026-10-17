@@ -12,20 +12,21 @@ import {
  */
 
 const RISK_COLOURS = {
-  HIGH: '#f87171',
-  MODERATE: '#fb923c',
-  LOWER: '#4ade80',
-  UNKNOWN: '#94a3b8',
+  HIGH: '#C0392B',
+  MODERATE: '#C05621',
+  LOWER: '#276749',
+  UNKNOWN: '#718096',
 }
 
 const CHART_BG = 'transparent'
-const AXIS_COLOUR = '#5a6278'
+const AXIS_COLOUR = '#718096'
 const TOOLTIP_STYLE = {
-  background: '#1e2432',
-  border: '1px solid rgba(255,255,255,0.06)',
+  background: '#FFFFFF',
+  border: '1px solid rgba(0,0,0,0.10)',
   borderRadius: 6,
   fontSize: 12,
-  color: '#e8eaf0',
+  color: '#1A1A1A',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
 }
 
 export default function RiskCharts({ scanResult }) {
@@ -137,7 +138,7 @@ export default function RiskCharts({ scanResult }) {
                   contentStyle={TOOLTIP_STYLE}
                   formatter={(value) => [`${value} finding${value !== 1 ? 's' : ''}`, 'Count']}
                 />
-                <Bar dataKey="count" fill="#2dd4bf" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="count" fill="#176B65" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -156,7 +157,7 @@ export default function RiskCharts({ scanResult }) {
                   contentStyle={TOOLTIP_STYLE}
                   formatter={(value) => [`${value} finding${value !== 1 ? 's' : ''}`, 'Count']}
                 />
-                <Bar dataKey="count" fill="#818cf8" radius={[0, 3, 3, 0]} />
+                <Bar dataKey="count" fill="#176B65" radius={[0, 3, 3, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

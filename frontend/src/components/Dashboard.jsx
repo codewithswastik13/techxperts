@@ -60,7 +60,9 @@ export default function Dashboard({ apiHealth, scanResult, onStartScan }) {
       <div className="capability-grid">
         {CAPABILITIES.map(cap => (
           <div key={cap.label} className="capability-item">
-            <cap.Icon className="capability-icon" size={18} />
+            <div className="capability-icon-wrap" aria-hidden="true">
+              <cap.Icon className="capability-icon" size={18} />
+            </div>
             <div className="capability-label">{cap.label}</div>
             <div className="capability-desc">{cap.desc}</div>
           </div>
@@ -115,11 +117,11 @@ function ScanSummary({ scanResult }) {
           <div className="stat-label">Lower risk</div>
         </div>
         <div className="stat-item">
-          <div className="stat-value" style={{ color: 'var(--risk-unknown)' }}>{summary.manual_review_required_count ?? 0}</div>
+          <div className="stat-value" style={{ color: 'var(--risk-unknown)', fontSize: 28 }}>{summary.manual_review_required_count ?? 0}</div>
           <div className="stat-label">Require manual review</div>
         </div>
         <div className="stat-item">
-          <div className="stat-value" style={{ color: 'var(--text-secondary)', fontSize: 18 }}>{(scanResult.scan_duration_seconds ?? 0).toFixed(2)}s</div>
+          <div className="stat-value" style={{ color: 'var(--text-secondary)', fontSize: 20 }}>{(scanResult.scan_duration_seconds ?? 0).toFixed(2)}s</div>
           <div className="stat-label">Scan duration</div>
         </div>
       </div>

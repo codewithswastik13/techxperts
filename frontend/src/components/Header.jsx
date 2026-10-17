@@ -17,7 +17,7 @@ export default function Header({ activeTab, onTabChange, apiHealth, hasScanResul
     <header className="header" role="banner">
       <div className="header-inner">
         <a href="#" className="wordmark" onClick={(e) => { e.preventDefault(); onTabChange('dashboard') }} aria-label="QuantumShield home">
-          <div className="wordmark-shield" aria-hidden="true" />
+          <Shield size={22} className="wordmark-icon" aria-hidden="true" />
           <span className="wordmark-text">QuantumShield</span>
           <span className="wordmark-sub">QFF 2026</span>
         </a>

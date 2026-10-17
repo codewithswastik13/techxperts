@@ -17,6 +17,9 @@ import os
 import zipfile
 
 OUTPUT_PATH = os.path.join(os.path.dirname(__file__), "sample_repo.zip")
+FRONTEND_PUBLIC_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)), "frontend", "public", "sample_repo.zip"
+)
 
 # ---------------------------------------------------------------------------
 # Sample files — realistic cryptographic usage patterns
@@ -309,3 +312,5 @@ def create_sample_zip(output_path: str) -> None:
 
 if __name__ == "__main__":
     create_sample_zip(OUTPUT_PATH)
+    if os.path.isdir(os.path.dirname(FRONTEND_PUBLIC_PATH)):
+        create_sample_zip(FRONTEND_PUBLIC_PATH)

@@ -205,7 +205,7 @@ export default function ScanWorkspace({ onScanComplete, apiHealth }) {
             Validating archive, invoking scanner, applying risk classification…
           </div>
           <div className="progress-bar-track" style={{ width: 280 }}>
-            <div className="progress-bar-fill" style={{ width: '60%', animation: 'none' }} />
+            <div className="progress-bar-fill" />
           </div>
         </div>
       )}
@@ -246,12 +246,7 @@ export default function ScanWorkspace({ onScanComplete, apiHealth }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
           {HOW_IT_WORKS.map((step, i) => (
             <div key={i} style={{ display: 'flex', gap: 'var(--sp-3)', alignItems: 'flex-start' }}>
-              <div style={{
-                width: 22, height: 22, borderRadius: '50%',
-                background: 'var(--surface-3)', color: 'var(--accent)',
-                font: '600 11px/22px Inter', textAlign: 'center',
-                flexShrink: 0,
-              }}>{i + 1}</div>
+              <div className="step-number">{i + 1}</div>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>{step.title}</div>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>{step.desc}</div>
